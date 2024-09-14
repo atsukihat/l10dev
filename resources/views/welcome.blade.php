@@ -4,6 +4,10 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
+        <!-- Google AdSense -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4080571765684531"
+            crossorigin="anonymous"></script>
+
         <title>かえで授業レビューサイト</title>
 
         {{-- favicon --}}
