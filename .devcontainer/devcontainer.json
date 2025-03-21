@@ -1,0 +1,35 @@
+{
+  "name": "l10dev",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "l10dev-app",
+  "workspaceFolder": "/src",
+  "shutdownAction": "stopCompose",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "xdebug.php-debug",
+        "junstyle.php-cs-fixer",
+        "bmewburn.vscode-intelephense-client",
+        "one-dark.ayu",
+        "dbaeumer.vscode-eslint",
+        "ms-azuretools.vscode-docker",
+        "Vue.vscode-typescript-vue-plugin"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "intelephense.environment.phpVersion": "8.1",
+        "php.validate.executablePath": "/usr/local/bin/php",
+        "eslint.validate": ["javascript", "vue"],
+        "volar.takeOverMode.enabled": true
+      }
+    }
+  },
+
+  "mounts": ["source=${localWorkspaceFolder}/src,target=/src,type=bind,consistency=cached"],
+
+  "postCreateCommand": "composer install && npm install",
+
+  "forwardPorts": [5173, 9001, 3306, 16379]
+}
