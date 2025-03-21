@@ -16,8 +16,8 @@
     ads.value.appendChild(iframe);
 
     // 3. iframe 内の HTML を生成
-    const html = `<body>
-        <script src="https://adm.shinobi.jp/o/1a598700b94a1f08ec4e6aee180f407b"><\/script>
+    const html = `<body style="display: flex; justify-content: center; align-items: center; margin: 0;">
+        <script src="https://adm.shinobi.jp/o/473c6e012db1c0e34a0f642e4d165620"><\/script>
       </body>`;
 
     // 4. iframe 内の document に書き込み
@@ -47,14 +47,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 740px;
-    height: 160px; /* 忍者Admax の広告サイズに調整 */
+    width: 100%;
+    height: 100%; /* 忍者Admax の広告サイズに調整 */
   }
 
   @media screen and (max-width: 768px) {
     .ad {
-      width: 330px;
-      height: 70px; /* スマホ版の広告サイズに調整 */
+      width: 100%;
+      height: 100%; /* スマホ版の広告サイズに調整 */
     }
   }
 </style>
