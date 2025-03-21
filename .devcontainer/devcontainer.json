@@ -14,8 +14,7 @@
         "bmewburn.vscode-intelephense-client",
         "one-dark.ayu",
         "dbaeumer.vscode-eslint",
-        "ms-azuretools.vscode-docker",
-        "Vue.vscode-typescript-vue-plugin"
+        "ms-azuretools.vscode-docker"
       ],
       "settings": {
         "editor.formatOnSave": true,
@@ -27,9 +26,9 @@
     }
   },
 
-  "mounts": ["source=${localWorkspaceFolder}/src,target=/src,type=bind,consistency=cached"],
+  "postCreateCommand": "composer install && composer require spatie/laravel-permission && php artisan key:generate && npm install && npm install --save-dev vue @vitejs/plugin-vue && php artisan migrate:fresh --seed && npm run dev",
 
-  "postCreateCommand": "composer install && npm install",
+  "postStartCommand": "composer install && php artisan migrate && npm install && npm run dev",
 
   "forwardPorts": [5173, 9001, 3306, 16379]
 }
