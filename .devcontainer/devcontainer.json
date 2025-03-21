@@ -8,13 +8,49 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "esbenp.prettier-vscode",
+        // 言語サポート
+        "Vue.volar",
+        "hollowtree.vue-snippets",
+        "sdras.vue-vscode-snippets",
+        "dariofuzinato.vue-peek",
         "xdebug.php-debug",
         "junstyle.php-cs-fixer",
         "bmewburn.vscode-intelephense-client",
-        "one-dark.ayu",
         "dbaeumer.vscode-eslint",
-        "ms-azuretools.vscode-docker"
+        "esbenp.prettier-vscode",
+        "streetsidesoftware.code-spell-checker",
+        "MS-CEINTL.vscode-language-pack-ja",
+
+        // HTML/CSS
+        "ecmel.vscode-html-css",
+        "pranaygp.vscode-css-peek",
+        "formulahendry.auto-close-tag",
+        "formulahendry.auto-rename-tag",
+        "bradgashler.htmltagwrap",
+
+        // Git/GitHub
+        "mhutchie.git-graph",
+        "eamodio.gitlens",
+        "GitHub.remotehub",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+
+        // VSCode
+        "vscode-icons-team.vscode-icons",
+        "one-dark.ayu",
+        "oderwat.indent-rainbow",
+
+        // 便利機能
+        "ritwickdey.LiveServer",
+        "ionutvmi.path-autocomplete",
+        "mosapride.zenkaku",
+
+        // Docker
+        "ms-azuretools.vscode-docker",
+
+        // なんか面白いやつ
+        "pixl-garden.BongoCat",
+        "tonybaloney.vscode-pets"
       ],
       "settings": {
         "editor.formatOnSave": true,
