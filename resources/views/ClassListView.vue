@@ -6,6 +6,7 @@
   import FontChangeTitle from "../components/shared/FontChangeTitle.vue";
   import ClassList from "../components/ClassList.vue";
   import SearchClasses from "../components/SearchClasses.vue";
+  import Admax from "../components/Admax.vue";
 
   // searchClasses.vueで「検索」ボタンを押すととquery付きのpathでこのファイルのViewがrouter.pushで読み込まれる
   // path内のそのqueryをpathから取得し，格納する．
@@ -93,9 +94,11 @@
   <v-container class="pb-8 bg-primary" fluid>
     <FontChangeTitle> 大学生による授業評価を、オープンに。 </FontChangeTitle>
   </v-container>
-  <!-- <ClassList :class-data-list="classDataList"></ClassList> -->
   <!-- 検索機能 -->
   <SearchClasses></SearchClasses>
+
+  <!-- 広告 -->
+  <Admax></Admax>
 
   <!-- ここから検索で出てきた授業のリスト -->
   <ClassList :classDataList="classDataList"></ClassList>
