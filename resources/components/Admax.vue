@@ -9,7 +9,7 @@
     // 1. iframe を作成
     const iframe = document.createElement("iframe");
     iframe.style.width = "100%";
-    iframe.style.height = "250px"; // 高さは広告サイズに応じて調整
+    iframe.style.height = "270px"; // 高さは広告サイズに応じて調整
     iframe.style.border = "none";
 
     // 2. iframe を DOM に追加
@@ -36,7 +36,7 @@
 
 <style scoped>
   .ad {
-    width: 300px; /* 忍者Admax の広告サイズに調整 */
-    height: 250px;
+    width: 310px; /* 忍者Admax の広告サイズに調整 */
+    height: 280px;
   }
 </style>
