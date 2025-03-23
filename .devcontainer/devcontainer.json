@@ -1,0 +1,70 @@
+{
+  "name": "l10dev",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "l10dev-app",
+  "workspaceFolder": "/src",
+  "shutdownAction": "stopCompose",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // 言語サポート
+        "Vue.volar",
+        "hollowtree.vue-snippets",
+        "sdras.vue-vscode-snippets",
+        "dariofuzinato.vue-peek",
+        "xdebug.php-debug",
+        "junstyle.php-cs-fixer",
+        "bmewburn.vscode-intelephense-client",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "streetsidesoftware.code-spell-checker",
+        "MS-CEINTL.vscode-language-pack-ja",
+
+        // HTML/CSS
+        "ecmel.vscode-html-css",
+        "pranaygp.vscode-css-peek",
+        "formulahendry.auto-close-tag",
+        "formulahendry.auto-rename-tag",
+        "bradgashler.htmltagwrap",
+
+        // Git/GitHub
+        "mhutchie.git-graph",
+        "eamodio.gitlens",
+        "GitHub.remotehub",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+
+        // VSCode
+        "vscode-icons-team.vscode-icons",
+        "one-dark.ayu",
+        "oderwat.indent-rainbow",
+
+        // 便利機能
+        "ritwickdey.LiveServer",
+        "ionutvmi.path-autocomplete",
+        "mosapride.zenkaku",
+
+        // Docker
+        "ms-azuretools.vscode-docker",
+
+        // なんか面白いやつ
+        "pixl-garden.BongoCat",
+        "tonybaloney.vscode-pets"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "intelephense.environment.phpVersion": "8.1",
+        "php.validate.executablePath": "/usr/local/bin/php",
+        "eslint.validate": ["javascript", "vue"],
+        "volar.takeOverMode.enabled": true
+      }
+    }
+  },
+
+  "postCreateCommand": "composer install && composer require spatie/laravel-permission && php artisan key:generate && npm install && npm install --save-dev vue @vitejs/plugin-vue && php artisan migrate:fresh --seed && npm run dev",
+
+  "postStartCommand": "composer install && php artisan migrate && npm install && npm run dev",
+
+  "forwardPorts": [5173, 9001, 3306, 16379]
+}
