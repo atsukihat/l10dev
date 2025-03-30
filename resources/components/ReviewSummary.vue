@@ -167,7 +167,7 @@
                     </v-table>
                   </v-col>
                   <v-col cols="12" sm="12" md="12" lg="5">
-                    <RadarChart class="ma-5" :radar-chart-data="radarChartData"></RadarChart>
+                    <div class="radar-chart-in-review"><RadarChart class="ma-5" :radar-chart-data="radarChartData"></RadarChart></div>
                   </v-col>
                 </v-row>
               </details>
@@ -186,5 +186,11 @@
   }
   .review-table {
     background-color: #eceff1;
+  }
+  .radar-chart-in-review{
+    width: 100%;
+    height: 400px;
+    position: relative;
+    right: 20px;
   }
 </style>

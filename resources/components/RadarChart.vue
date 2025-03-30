@@ -66,7 +66,16 @@
 </script>
 
 <template>
-  <div>
-    <canvas ref="radarChart" width="600" height="350"></canvas>
+  <div class="wrap-chart">
+    <div class="chart-container">
+      <canvas ref="radarChart"></canvas>
+    </div>
   </div>
 </template>
+
+<style>
+  /* css */
+  .wrap-chart {
+    width: 100%;
+  } 
+</style>
