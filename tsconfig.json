@@ -16,6 +16,6 @@
     "baseUrl": ".",
     "types": ["vite/client"]
   },
-  "include": ["resources/**/*.ts", "resources/**/*.d.ts", "resources/**/*.vue"],
+  "include": ["resources/**/*.vue"],
   "exclude": ["node_modules"]
 }
