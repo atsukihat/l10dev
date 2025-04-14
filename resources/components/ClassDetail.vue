@@ -10,7 +10,7 @@
   const { classDetailData } = defineProps(["classDetailData"]);
   const router = useRouter();
 
-  const toggle = ref("btn-1");
+  const activeTab = ref("btn-1");
 
   const panel = ref(0);
 </script>
@@ -67,7 +67,7 @@
                 <v-row justify="center">
                   <v-col cols="12" class="d-flex justify-center">
                     <v-btn-toggle
-                      v-model="toggle"
+                      v-model="activeTab"
                       color="primary"
                       class="d-flex flex-wrap justify-center class-v-btn-toggle"
                     >
@@ -85,7 +85,7 @@
                 </v-row>
                 <v-row>
                   <v-col class="d-flex justify-center" cols="12">
-                    <v-window v-model="toggle">
+                    <v-window v-model="activeTab">
                       <v-window-item value="btn-1">
                         <RadarChart :radar-chart-data="classDetailData?.classRadarChartData"></RadarChart>
                       </v-window-item>

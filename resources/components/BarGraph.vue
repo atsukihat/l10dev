@@ -34,12 +34,12 @@
   const { keys: labels, values: data } = extractKeyAndValue(props.barGraphData);
 
   // Y軸の最大値調整
-  const getMaxValueResponse = (arr: number[]) => {
+  const calculateMaxThreshold = (arr: number[]) => {
     const thresholds = [10, 25, 50, 100];
     const maxValue = Math.max(...arr);
     return thresholds.find((t) => maxValue < t) ?? maxValue;
   };
-  const maxValue = getMaxValueResponse(data);
+  const maxValue = calculateMaxThreshold(data);
 
   // チャートデータ
   const chartData = computed<ChartData<"bar">>(() => ({
