@@ -1,110 +1,115 @@
-<script setup>
-  import { ref, onMounted } from "vue";
+<script setup lang="ts">
+  import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+  import { Bar } from "vue-chartjs";
+  import Loading from "./Loading.vue";
+  import {
+    Chart as ChartJS,
+    Title,
+    Tooltip,
+    Legend,
+    BarElement,
+    CategoryScale,
+    LinearScale,
+    ChartOptions,
+    ChartData
+  } from "chart.js";
 
-  const props = defineProps(["barGraphData", "chartTitle"]);
+  // Chart.js モジュール登録
+  ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
-  const extractKeyAndValue = (jsonData) => {
-    const keysArray = [];
-    const valuesArray = [];
+  // Props 定義
+  interface Props {
+    barGraphData: Record<string, number>;
+    chartTitle: string;
+  }
+  const props = defineProps<Props>();
 
-    for (const key in jsonData) {
-      if (jsonData.hasOwnProperty(key)) {
-        keysArray.push(key);
-        valuesArray.push(jsonData[key]);
-      }
-    }
-
-    return {
-      keys: keysArray,
-      values: valuesArray
-    };
+  // データ整形
+  const extractKeyAndValue = (jsonData: Record<string, number>) => {
+    const keys = Object.keys(jsonData);
+    const values = Object.values(jsonData);
+    return { keys, values };
   };
 
-  // 最大値の大きさごとにグラフの最大の高さを指定する関数
-  const getMaxValueResponse = (arr) => {
-    // 境界値
+  const { keys: labels, values: data } = extractKeyAndValue(props.barGraphData);
+
+  // Y軸の最大値調整
+  const getMaxValueResponse = (arr: number[]) => {
     const thresholds = [10, 25, 50, 100];
-    // 受け取った配列から最大値を取得する
     const maxValue = Math.max(...arr);
-    for (let threshold of thresholds) {
-      if (maxValue < threshold) {
-        return threshold;
-      }
-    }
-    return maxValue;
+    return thresholds.find((t) => maxValue < t) ?? maxValue;
   };
-
-  const keysAndValues = extractKeyAndValue(props.barGraphData);
-  const labels = keysAndValues.keys;
-  const data = keysAndValues.values;
   const maxValue = getMaxValueResponse(data);
 
-  // Chart.js
-  const loadChartJS = () => {
-    return new Promise((resolve, reject) => {
-      const scriptChartJS = document.createElement("script");
-      scriptChartJS.src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.0.1/chart.umd.js";
-      scriptChartJS.defer = true;
-      document.head.appendChild(scriptChartJS);
-
-      scriptChartJS.onload = resolve;
-      scriptChartJS.onerror = reject;
-    });
-  };
-
-  const barGraph = ref(null);
-
-  const chartData = {
-    labels: labels,
+  // チャートデータ
+  const chartData = computed<ChartData<"bar">>(() => ({
+    labels,
     datasets: [
       {
         label: props.chartTitle,
-        data: data,
+        data,
         backgroundColor: "rgba(75, 192, 192, 0.2)",
         borderColor: "rgba(75, 192, 192, 1)",
         borderWidth: 2
       }
     ]
-  };
+  }));
 
-  onMounted(async () => {
-    await loadChartJS();
-
-    // Wait for the script to be executed
-    await new Promise((resolve) => {
-      const checkExist = setInterval(() => {
-        if (typeof Chart !== "undefined") {
-          clearInterval(checkExist);
-          resolve();
-        }
-      }, 100);
-    });
-
-    // Create Bar Chart
-    const context = barGraph.value.getContext("2d");
-    new Chart(context, {
-      type: "bar",
-      data: chartData,
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true,
-            min: 0,
-            max: maxValue, // グラフの最大高
-            ticks: {
-              stepSize: 2
-            }
-          }
-        },
-        maintainAspectRatio: false,
-        responsive: true
+  // チャートオプション
+  const chartOptions = computed<ChartOptions<"bar">>(() => ({
+    responsive: false,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        min: 0,
+        max: maxValue,
+        ticks: { stepSize: 2 }
       }
-    });
+    },
+    animations: {
+      x: { duration: 0 },
+      y: { duration: 0 },
+      datasets: {
+        bar: {
+          duration: 800,
+          easing: "easeOutCubic"
+        }
+      }
+    }
+  }));
+
+  // ウィンドウサイズ監視
+  const windowWidth = ref(window.innerWidth);
+  const updateWindowWidth = () => {
+    windowWidth.value = window.innerWidth;
+  };
+  onMounted(() => window.addEventListener("resize", updateWindowWidth));
+  onUnmounted(() => window.removeEventListener("resize", updateWindowWidth));
+
+  // チャートサイズ（Vuetifyのブレークポイントに準拠）
+  const chartWidth = computed(() => {
+    const w = windowWidth.value;
+    if (w < 600) return 300;
+    if (w < 960) return 500;
+    if (w < 1264) return 600;
+    if (w < 1904) return 700;
+    return 800;
+  });
+  const chartHeight = computed(() => (chartWidth.value * 2) / 3);
+
+  // 描画タイミング制御
+  const isChartReady = ref(false);
+  onMounted(async () => {
+    await nextTick();
+    isChartReady.value = true;
+    setTimeout(() => window.dispatchEvent(new Event("resize")), 100);
   });
 </script>
 
 <template>
-  <div>
-    <canvas ref="barGraph" width="600" height="350"></canvas>
+  <div :style="{ width: chartWidth + 'px', height: chartHeight + 'px' }">
+    <Loading v-if="!isChartReady" />
+    <Bar v-else :key="chartWidth" :data="chartData" :options="chartOptions" :width="chartWidth" :height="chartHeight" />
   </div>
 </template>

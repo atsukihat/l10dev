@@ -2,7 +2,6 @@
   import { defineProps, ref } from "vue";
   import { useRouter } from "vue-router";
   import ReviewListVue from "./ReviewList.vue";
-  import GraphTabs from "./GraphTabs.vue";
   import ClassInformationTable from "./ClassInformationTable.vue";
   import RadarChart from "./RadarChart.vue";
   import BarGraph from "./BarGraph.vue";
@@ -11,7 +10,7 @@
   const { classDetailData } = defineProps(["classDetailData"]);
   const router = useRouter();
 
-  const toggle = ref(undefined);
+  const toggle = ref("btn-1");
 
   const panel = ref(0);
 </script>
@@ -88,11 +87,7 @@
                   <v-col class="d-flex justify-center" cols="12">
                     <v-window v-model="toggle">
                       <v-window-item value="btn-1">
-                        <v-row>
-                          <v-col cols="12">
-                            <RadarChart :radar-chart-data="classDetailData?.classRadarChartData"></RadarChart
-                          >
-                          </v-col></v-row>
+                        <RadarChart :radar-chart-data="classDetailData?.classRadarChartData"></RadarChart>
                       </v-window-item>
                       <v-window-item value="btn-2">
                         <BarGraph
