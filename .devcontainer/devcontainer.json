@@ -62,9 +62,9 @@
     }
   },
 
-  "postCreateCommand": "composer install && composer require spatie/laravel-permission && php artisan key:generate && npm install && npm install --save-dev vue @vitejs/plugin-vue && php artisan migrate:fresh --seed && npm run dev",
+  "postCreateCommand": "composer install && php artisan key:generate && npm install && php artisan migrate:fresh --seed",
 
-  "postStartCommand": "composer install && php artisan migrate && npm install && npm run dev",
+  "postStartCommand": "",
 
   "forwardPorts": [5173, 9001, 3306, 16379]
 }
