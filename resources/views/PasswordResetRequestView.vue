@@ -35,26 +35,56 @@
 </script>
 
 <template>
-  <v-container>
-    <h1>パスワード再設定リクエスト</h1>
+  <v-container class="fill-height d-flex align-center justify-center">
+    <v-row justify="center">
+      <v-col cols="12" sm="8" md="6" lg="5" xl="4">
+        <loading v-if="isLoading" />
 
-    <!-- ✅ ローディング中表示 -->
-    <loading v-if="isLoading" />
+        <!-- ✅ メール送信完了メッセージ -->
+        <v-card v-else-if="isSuccess" class="auth-card pa-4 pt-7 mb-15 text-center" max-width="500">
+          <v-icon size="64" color="primary">mdi-email-check-outline</v-icon>
+          <v-card-text class="pt-2">
+            <h5 class="text-h5 font-weight-semibold mb-4">メールを送信しました</h5>
+            <p>
+              パスワード再設定用のリンクを記載したメールを送信しました。<br />
+              ご確認のうえ、手続きを完了してください。
+            </p>
+          </v-card-text>
+        </v-card>
 
-    <!-- ✅ メール送信完了メッセージ -->
-    <div v-else-if="isSuccess" class="text-center my-4">
-      <v-icon size="64" color="primary">mdi-email-check-outline</v-icon>
-      <p class="text-h6 mt-2">メールを送信しました</p>
-      <p>パスワード再設定用のリンクを記載したメールを送信しました。<br />ご確認のうえ、手続きを完了してください。</p>
-    </div>
+        <!-- ✅ 入力フォーム -->
+        <v-card v-else class="auth-card pa-4 pt-7 mb-15" max-width="500">
+          <v-card-text class="pt-2">
+            <h5 class="text-h5 font-weight-semibold mb-4 text-center">パスワード再設定リクエスト</h5>
+          </v-card-text>
 
-    <!-- ✅ 入力フォーム -->
-    <v-form v-else>
-      <v-text-field v-model="email" label="メールアドレス" type="email" required></v-text-field>
-      <v-btn :disabled="isLoading" @click="requestResetLink">送信</v-btn>
-    </v-form>
+          <v-form @submit.prevent="requestResetLink">
+            <v-row>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="email"
+                  label="メールアドレス"
+                  type="email"
+                  required
+                  variant="outlined"
+                  class="mb-4"
+                />
+              </v-col>
+              <v-col cols="12" class="text-center">
+                <v-btn type="submit" :disabled="isLoading" color="primary"> 送信 </v-btn>
+              </v-col>
+            </v-row>
+          </v-form>
+        </v-card>
 
-    <!-- ✅ アラートメッセージ -->
-    <common-alert v-if="message" :message="message" :type="type" unique-key="password-reset-request-alert" />
+        <common-alert
+          v-if="message"
+          :message="message"
+          :type="type"
+          unique-key="password-reset-request-alert"
+          class="mt-4"
+        />
+      </v-col>
+    </v-row>
   </v-container>
 </template>
