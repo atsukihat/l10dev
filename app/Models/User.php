@@ -64,13 +64,32 @@ class User extends Authenticatable
     {
         $resetUrl = url('/password/reset/' . $token . '?email=' . urlencode($this->userEmail));
 
-        Mail::raw("以下のリンクからパスワードをリセットできます：\n\n" . $resetUrl, function ($message) {
+        $body = <<<EOT
+            {$this->userName} 様
+
+            いつも【かえで 授業レビューサイト】のご利用ありがとうございます。
+            パスワードの再設定につきまして、以下のリンクよりお手続きください。
+
+            ▼ パスワード再設定リンク（有効期限：60分）
+            $resetUrl
+
+            ※このメールに心当たりがない場合は、他の方が誤ってメールアドレスを入力した可能性があります。
+            その場合は、このメールを無視してください。
+
+            --
+            このメールはシステムから自動送信されています。
+            ご不明な点がございましたら、サポートまでお問い合わせください。
+            https://hirodai-kaede.com/contact
+            EOT;
+
+        Mail::raw($body, function ($message) {
             $message->to($this->userEmail)
-                ->subject('パスワードリセットリンク');
+                ->subject('【かえで 授業レビューサイト】パスワード再設定のご案内');
         });
 
         Log::debug('Mail::raw によりメール送信を試みました: ' . $resetUrl);
     }
+
 
     public function updateLastLogin()
     {
