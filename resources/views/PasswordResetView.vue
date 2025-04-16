@@ -1,7 +1,9 @@
 <script setup>
-  import { ref } from "vue";
+  import { ref, computed } from "vue";
   import { useRoute, useRouter } from "vue-router";
   import axios from "axios";
+  import useVuelidate from "@vuelidate/core";
+  import { required, minLength, maxLength, sameAs } from "@vuelidate/validators";
   import CommonAlert from "../components/shared/CommonAlert.vue";
   import Loading from "../components/Loading.vue";
 
@@ -14,10 +16,36 @@
   const passwordConfirmation = ref("");
   const message = ref("");
   const type = ref("");
+  const visible = ref(false);
   const isLoading = ref(false);
-  const isSuccess = ref(false); // ✅ 成功状態フラグ
+  const isSuccess = ref(false);
+
+  // バリデーションルール
+  const rules = computed(() => ({
+    password: {
+      required,
+      minLength: minLength(8),
+      maxLength: maxLength(32)
+    },
+    passwordConfirmation: {
+      required,
+      sameAsPassword: sameAs(password)
+    }
+  }));
+
+  const v$ = useVuelidate(rules, {
+    password,
+    passwordConfirmation
+  });
 
   const resetPassword = async () => {
+    const isValid = await v$.value?.$validate();
+    if (!isValid) {
+      message.value = "入力内容に誤りがあります。";
+      type.value = "error";
+      return;
+    }
+
     message.value = "";
     type.value = "error";
     isLoading.value = true;
@@ -27,11 +55,11 @@
         token,
         email,
         password: password.value,
-        password_confirmation: passwordConfirmation.value,
+        password_confirmation: passwordConfirmation.value
       });
 
       if (response.status === 200) {
-        isSuccess.value = true; // ✅ 成功表示に切り替え
+        isSuccess.value = true;
         setTimeout(() => {
           router.push("/login");
         }, 5000);
@@ -55,50 +83,69 @@
 </script>
 
 <template>
-  <v-container>
-    <h1>パスワード再設定</h1>
+  <v-container class="fill-height d-flex align-center justify-center">
+    <v-row justify="center">
+      <v-col cols="12" sm="8" md="6" lg="5" xl="4">
+        <loading v-if="isLoading" />
 
-    <!-- ✅ ローディング中表示 -->
-    <loading v-if="isLoading" />
+        <v-card v-else-if="isSuccess" class="auth-card pa-4 pt-7 mb-15 text-center" max-width="500">
+          <v-icon size="64" color="green">mdi-check-circle</v-icon>
+          <v-card-text class="pt-2">
+            <h5 class="text-h5 font-weight-semibold mb-4">パスワードが再設定されました！</h5>
+            <p>数秒後にログインページへ移動します。</p>
+          </v-card-text>
+        </v-card>
 
-    <!-- ✅ 成功メッセージ表示 -->
-    <div v-else-if="isSuccess" class="text-center my-4">
-      <v-icon size="64" color="green">mdi-check-circle</v-icon>
-      <p class="text-h6 mt-2">パスワードが再設定されました！</p>
-      <p>数秒後にログインページへ移動します。</p>
-    </div>
+        <v-card v-else class="auth-card pa-4 pt-7 mb-15" max-width="500">
+          <v-card-text class="pt-2">
+            <h5 class="text-h5 font-weight-semibold mb-4 text-center">パスワード再設定</h5>
+          </v-card-text>
+          <v-form @submit.prevent="resetPassword">
+            <v-row>
+              <v-col cols="12">
+                <v-text-field v-model="email" label="メールアドレス" type="email" readonly disabled required class="mb-4" />
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="password"
+                  :error-messages="
+                    v$.password?.$error ? ['8字以上32字以下の, 有効なパスワードを入力してください. '] : []
+                  "
+                  :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
+                  :type="visible ? 'text' : 'password'"
+                  label="新しいパスワード(8~32文字)"
+                  name="password"
+                  clearable
+                  variant="outlined"
+                  class="mb-4"
+                  @click:append-inner="visible = !visible"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="passwordConfirmation"
+                  :error-messages="
+                    v$.passwordConfirmation?.$error ? ['入力されたパスワードが確認用パスワードと一致しません. '] : []
+                  "
+                  :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
+                  :type="visible ? 'text' : 'password'"
+                  label="パスワード確認"
+                  name="passwordConfirmation"
+                  clearable
+                  variant="outlined"
+                  class="mb-6"
+                  @click:append-inner="visible = !visible"
+                />
+              </v-col>
+              <v-col cols="12" class="text-center">
+                <v-btn type="submit" :disabled="isLoading" color="primary"> 登録する </v-btn>
+              </v-col>
+            </v-row>
+          </v-form>
+        </v-card>
 
-    <!-- ✅ 入力フォーム表示 -->
-    <v-form v-else>
-      <v-text-field
-        v-model="email"
-        label="メールアドレス"
-        type="email"
-        readonly
-        disabled
-        required
-      />
-      <v-text-field
-        v-model="password"
-        label="新しいパスワード"
-        type="password"
-        required
-      />
-      <v-text-field
-        v-model="passwordConfirmation"
-        label="パスワード確認"
-        type="password"
-        required
-      />
-      <v-btn :disabled="isLoading" @click="resetPassword">パスワードを再設定</v-btn>
-    </v-form>
-
-    <!-- ✅ アラートメッセージ -->
-    <common-alert
-      v-if="message"
-      :message="message"
-      :type="type"
-      unique-key="password-reset-alert"
-    />
+        <common-alert v-if="message" :message="message" :type="type" unique-key="password-reset-alert" class="mt-4" />
+      </v-col>
+    </v-row>
   </v-container>
 </template>
