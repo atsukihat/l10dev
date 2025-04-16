@@ -4,7 +4,6 @@ import LoginView from "../views/LoginView.vue";
 import WelcomeView from "../views/WelcomeView.vue";
 import ProfileView from "../views/ProfileView.vue";
 import RegisterView from "../views/RegisterView.vue";
-import RessetPasswordView from "../views/RessetPasswordView.vue";
 import ClassListView from "../views/ClassListView.vue";
 import ProfileEditView from "../views/ProfileEditView.vue";
 import ClassDetailView from "../views/ClassDetailView.vue";
@@ -30,7 +29,6 @@ const router = createRouter({
     { path: "/", name: "welcome", component: WelcomeView },
     { path: "/register", name: "register", component: RegisterView },
     { path: "/login", name: "login", component: LoginView },
-    { path: "/reset-password", name: "reset-password", component: RessetPasswordView, meta: { requiresAuth: true } },
     // 後々/profileにmeta: { requiresAuth: true },を追加する(ログインしていないと見れない)
     { path: "/profile", name: "profile", component: ProfileView, meta: { requiresAuth: true } },
     { path: "/profile/edit", name: "profile/edit", component: ProfileEditView, meta: { requiresAuth: true } },
