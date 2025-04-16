@@ -220,31 +220,48 @@ class UserController extends Controller
 
     public function resetPasswordFromLink(Request $request)
     {
-        $request->validate([
-            'token' => 'required',
-            'email' => 'required|email|exists:users,userEmail',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+        try {
+            Log::debug('resetPasswordFromLink リクエスト:', $request->all());
 
-        // トークンの照合（注意：トークンはハッシュ保存されている）
-        $record = DB::table('password_reset_tokens')
-            ->where('email', $request->email)
-            ->first();
+            $request->validate([
+                'token' => 'required',
+                'email' => 'required|email|exists:users,userEmail',
+                'password' => 'required|string|min:8|confirmed',
+            ]);
 
-        if (!$record || !Hash::check($request->token, $record->token)) {
-            return response()->json(['message' => 'トークンが無効です。'], 400);
+            // トークンの照合（注意：トークンはハッシュ保存されている）
+            $record = DB::table('password_reset_tokens')
+                ->where('email', $request->email)
+                ->first();
+
+            if (!$record || !Hash::check($request->token, $record->token)) {
+                return response()->json(['message' => 'トークンが無効です。'], 400);
+            }
+
+            if (Carbon::parse($record->created_at)->addMinutes(60)->isPast()) {
+                return response()->json(['message' => 'トークンの有効期限が切れています。'], 400);
+            }
+
+            $user = User::where('userEmail', $request->email)->first();
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+            Log::debug('パスワード再設定成功');
+            return response()->json(['message' => 'パスワードが再設定されました。'], 200);
+        } catch (ValidationException $e) {
+            Log::error('resetPasswordFromLink バリデーションエラー:', ['errors' => $e->errors()]);
+            return response()->json([
+                'message' => 'パスワードが8文字以上であることを確認してください。パスワードと確認用パスワードが一致していることを確認してください。',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('resetPasswordFromLink エラー:', ['error' => $e->getMessage()]);
+            return response()->json([
+                'message' => 'サーバーエラーが発生しました。',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        if (Carbon::parse($record->created_at)->addMinutes(60)->isPast()) {
-            return response()->json(['message' => 'トークンの有効期限が切れています。'], 400);
-        }
-
-        $user = User::where('userEmail', $request->email)->first();
-        $user->password = Hash::make($request->password);
-        $user->save();
-
-        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
-
-        return response()->json(['message' => 'パスワードが再設定されました。'], 200);
     }
 }

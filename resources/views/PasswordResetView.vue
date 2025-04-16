@@ -12,8 +12,11 @@
   const password = ref("");
   const passwordConfirmation = ref("");
   const message = ref("");
+  const type = ref("");
 
   const resetPassword = async () => {
+    message.value = "";
+    type.value = "";
     console.log(email.value);
     try {
       const response = await axios.post("/api/password/reset", {
@@ -23,16 +26,23 @@
         password_confirmation: passwordConfirmation.value
       });
 
-      message.value = response.data.message || "パスワードが再設定されました。";
-      setTimeout(() => router.push("/login"), 2000);
+      if (response.status === 200) {
+        message.value = "パスワードが再設定されました。";
+        type.value = "success";
+        setTimeout(() => router.push("/login"), 5000);
+      }
     } catch (error) {
-      // バックエンドからのエラー本文に message がある場合はそれを使う
       if (error.response && error.response.data && error.response.data.message) {
         message.value = error.response.data.message;
+      } else if (error.response && error.response.status) {
+        message.value = `エラーが発生しました。ステータスコード: ${error.response.status}`;
+      } else if (error.message) {
+        message.value = error.message;
       } else {
         message.value = "エラーが発生しました。入力内容を確認してください。";
       }
-      console.error(error); // ログ出力もあると安心
+      type.value = "error";
+      console.error(error);
     }
   };
 </script>
@@ -46,11 +56,6 @@
       <v-text-field v-model="passwordConfirmation" label="パスワード確認" type="password" required></v-text-field>
       <v-btn @click="resetPassword">パスワードを再設定</v-btn>
     </v-form>
-    <common-alert
-      v-if="message"
-      :message="message"
-      type="success"
-      unique-key="password-reset-alert"
-    ></common-alert>
+    <common-alert v-if="message" :message="message" :type="type" unique-key="password-reset-alert"></common-alert>
   </v-container>
 </template>

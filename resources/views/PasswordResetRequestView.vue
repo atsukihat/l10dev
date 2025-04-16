@@ -8,6 +8,8 @@
   const type = ref("");
 
   const requestResetLink = async () => {
+    message.value = "";
+    type.value = "";
     try {
       const response = await axios.post("/api/password/reset-request", { email: email.value });
       if (response.status === 200) {
