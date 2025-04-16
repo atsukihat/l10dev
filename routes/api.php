@@ -67,3 +67,9 @@ Route::delete('/deleteReview/{id}',[ReviewsController::class, 'destroy']);
 
 // 総レビュー数の取得
 Route::get('/allReviewCount',[ReviewsController::class, 'allReviewCount']);
+
+// パスワード再設定用のリンクをEmailに送信
+Route::post('/password/reset-request', [UserController::class, 'sendResetLink'])->name('password.reset-request');
+
+// Emailに送信されたリンクからパスワードを再設定
+Route::post('/password/reset', [UserController::class, 'resetPasswordFromLink'])->name('password.reset');

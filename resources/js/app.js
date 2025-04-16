@@ -9,6 +9,8 @@ import ClassListView from "../views/ClassListView.vue";
 import ProfileEditView from "../views/ProfileEditView.vue";
 import ClassDetailView from "../views/ClassDetailView.vue";
 import ClassPostView from "../views/ClassPostView.vue";
+import PasswordResetRequestView from "../views/PasswordResetRequestView.vue";
+import PasswordResetView from "../views/PasswordResetView.vue";
 import PrivacyPolicyView from "../views/PrivacyPolicyView.vue";
 import TermsView from "../views/TermsView.vue";
 import ContactView from "../views/ContactView.vue";
@@ -37,9 +39,11 @@ const router = createRouter({
       path: "/class/:lectureId/detail",
       name: "class-detail",
       component: ClassDetailView,
-      props: true,
+      props: true
     },
     { path: "/class/post", name: "class/post", component: ClassPostView, meta: { requiresAuth: true } },
+    { path: "/password/reset-request", name: "password-reset-request", component: PasswordResetRequestView },
+    { path: "/password/reset/:token", name: "password-reset", component: PasswordResetView },
     { path: "/privacy-policy", name: "privacy-policy", component: PrivacyPolicyView },
     { path: "/terms", name: "terms", component: TermsView },
     { path: "/contact", name: "contact", component: ContactView },

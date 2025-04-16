@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +15,7 @@ use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
 use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserEditRequest;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
@@ -24,15 +26,15 @@ class UserController extends Controller
     public function create(UserCreateRequest $request)
     {
         $user = User::query()->create([
-            'userName'=>$request['userName'],
-            'userEmail'=>$request['userEmail'],
-            'password'=>Hash::make($request['password']),
-            'category'=>$request['category'],
-            'faculty'=>$request['faculty'],
-            'department'=>$request['department'],
-            'admissionYear'=>$request['admissionYear'],
-            'createdAt'=>now(),
-            'updatedAt'=>now(),
+            'userName' => $request['userName'],
+            'userEmail' => $request['userEmail'],
+            'password' => Hash::make($request['password']),
+            'category' => $request['category'],
+            'faculty' => $request['faculty'],
+            'department' => $request['department'],
+            'admissionYear' => $request['admissionYear'],
+            'createdAt' => now(),
+            'updatedAt' => now(),
         ]);
 
         // ユーザーに権限を付与;
@@ -47,7 +49,7 @@ class UserController extends Controller
 
         Auth::loginUsingId($user->userId);
 
-        return response()->json(['success' => true,'id' => $user->userId,'role' => $user->getRoleNames()]);
+        return response()->json(['success' => true, 'id' => $user->userId, 'role' => $user->getRoleNames()]);
     }
 
     /**
@@ -74,11 +76,11 @@ class UserController extends Controller
             'lastLoginAt' => $user->lastLoginAt,
         ];
 
-         // Reviewsテーブルのlecture_idを基にレビュー一覧の取得
-         $reviews = Reviews::where('userId', $userId)
-         // ->select('attendance_year', 'attendance_confirm', 'weekly_assignments', 'midterm_assignments', 'final_assignments')
-         ->select('reviewId','attendanceYear', 'attendanceConfirm', 'weeklyAssignments', 'midtermAssignments', 'finalAssignments', 'pastExamPossession', 'grades', 'creditLevel', 'interestLevel', 'skillLevel', 'comments','createdAt')
-         ->get();
+        // Reviewsテーブルのlecture_idを基にレビュー一覧の取得
+        $reviews = Reviews::where('userId', $userId)
+            // ->select('attendance_year', 'attendance_confirm', 'weekly_assignments', 'midterm_assignments', 'final_assignments')
+            ->select('reviewId', 'attendanceYear', 'attendanceConfirm', 'weeklyAssignments', 'midtermAssignments', 'finalAssignments', 'pastExamPossession', 'grades', 'creditLevel', 'interestLevel', 'skillLevel', 'comments', 'createdAt')
+            ->get();
 
         $reviewInfo = $reviews->map(function ($review) {
 
@@ -108,8 +110,8 @@ class UserController extends Controller
         });
 
         $data = [
-            'userData'=>$userData,
-            'reviewInfo'=>$reviewInfo,
+            'userData' => $userData,
+            'reviewInfo' => $reviewInfo,
         ];
 
         // JSON形式でデータを返す
@@ -124,7 +126,7 @@ class UserController extends Controller
 
         $user = User::where('userEmail', $userEmail)->first();
 
-        if (Auth::attempt(['userEmail' => $userEmail, 'password' => $password])){
+        if (Auth::attempt(['userEmail' => $userEmail, 'password' => $password])) {
 
             $user = Auth::user();
             $user->updateLastLogin();
@@ -138,10 +140,8 @@ class UserController extends Controller
             Log::Debug($user->getRoleNames());
             Log::Debug($user->getDirectPermissions());
 
-            return response()->json(['success' => true,'id' => $user->userId,'role' => $user->getRoleNames()]);
-
-        }
-        else{
+            return response()->json(['success' => true, 'id' => $user->userId, 'role' => $user->getRoleNames()]);
+        } else {
             return response()->json(['success' => false]);
             Log::debug("メアド・パスワードのどちらかが間違ってます");
         }
@@ -149,17 +149,17 @@ class UserController extends Controller
 
     public function logout()
     {
-       Auth::logout();
-       return back();
+        Auth::logout();
+        return back();
 
-    //    return redirect('/');
+        //    return redirect('/');
     }
 
     public function update(UserEditRequest $request)
     {
-          $userId = auth()->id();
-          $user = User::find($userId);
-          $user->update($request->all());
+        $userId = auth()->id();
+        $user = User::find($userId);
+        $user->update($request->all());
     }
 
     public function initialValues()
@@ -183,6 +183,55 @@ class UserController extends Controller
         ];
 
         // JSON形式でデータを返す
-        return response()->json($userData);      
+        return response()->json($userData);
+    }
+
+    public function sendResetLink(Request $request)
+    {
+        try {
+            Log::debug('sendResetLink リクエスト:', $request->all());
+
+            $request->validate([
+                'email' => 'required|email|exists:users,userEmail',
+            ]);
+
+            // userEmail でユーザー取得
+            $user = User::where('userEmail', $request->email)->first();
+            if (!$user) {
+                return response()->json(['message' => 'ユーザーが見つかりません。'], 404);
+            }
+
+            // トークンを作成して通知を送る（自動でメール送信）
+            $token = Password::createToken($user);
+            $user->sendPasswordResetNotification($token);
+
+            Log::debug('リセットリンク送信成功');
+            return response()->json(['message' => 'パスワード再設定リンクを送信しました。'], 200);
+        } catch (\Exception $e) {
+            Log::error('sendResetLink エラー:', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'サーバーエラーが発生しました。', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+
+    // Emailに送信されたリンクからパスワードを再設定する関数
+    public function resetPasswordFromLink(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email|exists:users,email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill(['password' => Hash::make($password)])->save();
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? response()->json(['message' => 'パスワードが再設定されました。'], 200)
+            : response()->json(['message' => 'パスワード再設定に失敗しました。'], 500);
     }
 }
