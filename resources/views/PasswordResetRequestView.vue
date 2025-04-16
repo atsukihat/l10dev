@@ -9,12 +9,20 @@
 
   const requestResetLink = async () => {
     try {
-      axios.post("/api/password/reset-request", { email: email.value });
-      message.value = "パスワード再設定リンクを送信しました。";
-      type.value = "success";
+      const response = await axios.post("/api/password/reset-request", { email: email.value });
+      if (response.status === 200) {
+        message.value = "パスワード再設定リンクを送信しました。";
+        type.value = "success";
+      }
     } catch (error) {
-      message.value = "エラーが発生しました。メールアドレスを確認してください。";
+      // バックエンドからのエラー本文に message がある場合はそれを使う
+      if (error.response && error.response.data && error.response.data.message) {
+        message.value = error.response.data.message;
+      } else {
+        message.value = "エラーが発生しました。入力内容を確認してください。";
+      }
       type.value = "error";
+      console.error(error); // ログ出力もあると安心
     }
     setTimeout(() => {
       message.value = "";

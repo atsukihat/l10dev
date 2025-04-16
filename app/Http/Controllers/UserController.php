@@ -193,7 +193,7 @@ class UserController extends Controller
             Log::debug('sendResetLink リクエスト:', $request->all());
 
             $request->validate([
-                'email' => 'required|email|exists:users,userEmail',
+                'email' => 'required|email',
             ]);
 
             // userEmail でユーザー取得
@@ -208,6 +208,9 @@ class UserController extends Controller
 
             Log::debug('リセットリンク送信成功');
             return response()->json(['message' => 'パスワード再設定リンクを送信しました。'], 200);
+        } catch (ValidationException $e) {
+            Log::error('sendResetLink バリデーションエラー:', ['errors' => $e->errors()]);
+            return response()->json(['message' => '入力データが無効です。', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             Log::error('sendResetLink エラー:', ['error' => $e->getMessage()]);
             return response()->json(['message' => 'サーバーエラーが発生しました。', 'error' => $e->getMessage()], 500);
@@ -242,6 +245,6 @@ class UserController extends Controller
 
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
-        return response()->json(['message' => 'パスワードが再設定されました。']);
+        return response()->json(['message' => 'パスワードが再設定されました。'], 200);
     }
 }
