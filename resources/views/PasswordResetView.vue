@@ -6,24 +6,32 @@
   const route = useRoute();
   const router = useRouter();
 
-  const token = route.query.token || ""; // リンクからトークンを取得
-  const email = route.query.email || "";  // リンクからメールアドレスを取得
+  const token = route.params.token || ""; // リンクからトークンを取得
+  const email = route.query.email || ""; // リンクからメールアドレスを取得
   const password = ref("");
   const passwordConfirmation = ref("");
   const message = ref("");
 
   const resetPassword = async () => {
+    console.log(email.value);
     try {
-      await axios.post("/api/password/reset", {
+      const response = await axios.post("/api/password/reset", {
         token,
-        email: email.value,
+        email,
         password: password.value,
         password_confirmation: passwordConfirmation.value
       });
-      message.value = "パスワードが再設定されました。ログインページに移動します。";
+
+      message.value = response.data.message || "パスワードが再設定されました。";
       setTimeout(() => router.push("/login"), 2000);
     } catch (error) {
-      message.value = "エラーが発生しました。入力内容を確認してください。";
+      // バックエンドからのエラー本文に message がある場合はそれを使う
+      if (error.response && error.response.data && error.response.data.message) {
+        message.value = error.response.data.message;
+      } else {
+        message.value = "エラーが発生しました。入力内容を確認してください。";
+      }
+      console.error(error); // ログ出力もあると安心
     }
   };
 </script>

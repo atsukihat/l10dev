@@ -15,7 +15,8 @@ use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
 use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserEditRequest;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class UserController extends Controller
 {
@@ -214,24 +215,33 @@ class UserController extends Controller
     }
 
 
-    // Emailに送信されたリンクからパスワードを再設定する関数
     public function resetPasswordFromLink(Request $request)
     {
         $request->validate([
             'token' => 'required',
-            'email' => 'required|email|exists:users,email',
+            'email' => 'required|email|exists:users,userEmail',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
-                $user->forceFill(['password' => Hash::make($password)])->save();
-            }
-        );
+        // トークンの照合（注意：トークンはハッシュ保存されている）
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
 
-        return $status === Password::PASSWORD_RESET
-            ? response()->json(['message' => 'パスワードが再設定されました。'], 200)
-            : response()->json(['message' => 'パスワード再設定に失敗しました。'], 500);
+        if (!$record || !Hash::check($request->token, $record->token)) {
+            return response()->json(['message' => 'トークンが無効です。'], 400);
+        }
+
+        if (Carbon::parse($record->created_at)->addMinutes(60)->isPast()) {
+            return response()->json(['message' => 'トークンの有効期限が切れています。'], 400);
+        }
+
+        $user = User::where('userEmail', $request->email)->first();
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        return response()->json(['message' => 'パスワードが再設定されました。']);
     }
 }
