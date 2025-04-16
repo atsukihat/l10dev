@@ -62,6 +62,9 @@ router.beforeEach((to, from, next) => {
       // User is not logged in, redirect to the login page
       next("/login");
     }
+  } else if (to.name === "login" && store.getters.isLoggedIn){
+    // ログイン済みのユーザーはホーム画面にリダイレクト
+    next("/");
   } else {
     // Route does not require authentication, proceed
     next();
