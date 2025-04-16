@@ -190,8 +190,6 @@ class UserController extends Controller
     public function sendResetLink(Request $request)
     {
         try {
-            Log::debug('sendResetLink リクエスト:', $request->all());
-
             $request->validate([
                 'email' => 'required|email',
             ]);
@@ -206,7 +204,6 @@ class UserController extends Controller
             $token = Password::createToken($user);
             $user->sendPasswordResetNotification($token);
 
-            Log::debug('リセットリンク送信成功');
             return response()->json(['message' => 'パスワード再設定リンクを送信しました。'], 200);
         } catch (ValidationException $e) {
             Log::error('sendResetLink バリデーションエラー:', ['errors' => $e->errors()]);
@@ -221,8 +218,6 @@ class UserController extends Controller
     public function resetPasswordFromLink(Request $request)
     {
         try {
-            Log::debug('resetPasswordFromLink リクエスト:', $request->all());
-
             $request->validate([
                 'token' => 'required',
                 'email' => 'required|email|exists:users,userEmail',
@@ -248,7 +243,6 @@ class UserController extends Controller
 
             DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
-            Log::debug('パスワード再設定成功');
             return response()->json(['message' => 'パスワードが再設定されました。'], 200);
         } catch (ValidationException $e) {
             Log::error('resetPasswordFromLink バリデーションエラー:', ['errors' => $e->errors()]);

@@ -8,7 +8,7 @@
   const message = ref("");
   const type = ref("");
   const isLoading = ref(false);
-  const isSuccess = ref(false); // ✅ 成功状態を追加
+  const isSuccess = ref(false);
 
   const requestResetLink = async () => {
     message.value = "";
@@ -18,7 +18,7 @@
     try {
       const response = await axios.post("/api/password/reset-request", { email: email.value });
       if (response.status === 200) {
-        isSuccess.value = true; // ✅ 成功表示へ切り替え
+        isSuccess.value = true; // 成功表示へ切り替え
       }
     } catch (error) {
       if (error.response?.data?.message) {
@@ -36,10 +36,18 @@
 
 <template>
   <v-row>
-    <v-col cols="12" sm="12" md="12" lg="12" xl="12" class="d-flex justify-center align-center" style="min-height: 80vh;">
+    <v-col
+      cols="12"
+      sm="12"
+      md="12"
+      lg="12"
+      xl="12"
+      class="d-flex justify-center align-center"
+      style="min-height: 80vh"
+    >
       <loading v-if="isLoading" />
 
-      <!-- ✅ メール送信完了メッセージ -->
+      <!-- メール送信完了メッセージ -->
       <v-card v-else-if="isSuccess" class="auth-card pa-4 pt-7 mb-15 text-center" max-width="500">
         <v-icon size="64" color="primary">mdi-email-check-outline</v-icon>
         <v-card-text class="pt-2">
@@ -51,7 +59,7 @@
         </v-card-text>
       </v-card>
 
-      <!-- ✅ 入力フォーム -->
+      <!-- 入力フォーム -->
       <v-card v-else class="auth-card pa-4 pt-7 mb-15" max-width="500">
         <v-card-text class="pt-2">
           <h5 class="text-h5 font-weight-semibold mb-4 text-center">パスワード再設定リクエスト</h5>

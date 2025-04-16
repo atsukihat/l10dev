@@ -86,8 +86,6 @@ class User extends Authenticatable
             $message->to($this->userEmail)
                 ->subject('【かえで 授業レビューサイト】パスワード再設定のご案内');
         });
-
-        Log::debug('Mail::raw によりメール送信を試みました: ' . $resetUrl);
     }
 
 
