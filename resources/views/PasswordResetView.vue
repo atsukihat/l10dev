@@ -1,6 +1,7 @@
 <script setup>
   import { ref } from "vue";
   import { useRoute, useRouter } from "vue-router";
+  import CommonAlert from "../components/shared/CommonAlert.vue";
   import axios from "axios";
 
   const route = useRoute();
@@ -45,6 +46,11 @@
       <v-text-field v-model="passwordConfirmation" label="パスワード確認" type="password" required></v-text-field>
       <v-btn @click="resetPassword">パスワードを再設定</v-btn>
     </v-form>
-    <p>{{ message }}</p>
+    <common-alert
+      v-if="message"
+      :message="message"
+      type="success"
+      unique-key="password-reset-alert"
+    ></common-alert>
   </v-container>
 </template>
