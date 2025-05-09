@@ -42,12 +42,6 @@ class UserController extends Controller
         $user->assignRole('user');
         $user->givePermissionTo('user');
 
-        // 役割・権限の取得
-        Log::Debug("ログイン中のユーザー情報:");
-        Log::Debug($user->userId);
-        Log::Debug($user->getRoleNames());
-        Log::Debug($user->getDirectPermissions());
-
         Auth::loginUsingId($user->userId);
 
         return response()->json(['success' => true, 'id' => $user->userId, 'role' => $user->getRoleNames()]);
@@ -131,20 +125,10 @@ class UserController extends Controller
 
             $user = Auth::user();
             $user->updateLastLogin();
-            Log::debug($user); // ユーザー情報の取得
-            Log::debug(Auth::user()->userId); //ユーザーidの取得
-
-            Log::debug("メアド・パスワードの両方あってます");
-
-            // 役割・権限の取得
-            Log::Debug("ログイン中のユーザー情報:");
-            Log::Debug($user->getRoleNames());
-            Log::Debug($user->getDirectPermissions());
 
             return response()->json(['success' => true, 'id' => $user->userId, 'role' => $user->getRoleNames()]);
         } else {
             return response()->json(['success' => false]);
-            Log::debug("メアド・パスワードのどちらかが間違ってます");
         }
     }
 
@@ -206,10 +190,8 @@ class UserController extends Controller
 
             return response()->json(['message' => 'パスワード再設定リンクを送信しました。'], 200);
         } catch (ValidationException $e) {
-            Log::error('sendResetLink バリデーションエラー:', ['errors' => $e->errors()]);
             return response()->json(['message' => '入力データが無効です。', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            Log::error('sendResetLink エラー:', ['error' => $e->getMessage()]);
             return response()->json(['message' => 'サーバーエラーが発生しました。', 'error' => $e->getMessage()], 500);
         }
     }
@@ -245,13 +227,11 @@ class UserController extends Controller
 
             return response()->json(['message' => 'パスワードが再設定されました。'], 200);
         } catch (ValidationException $e) {
-            Log::error('resetPasswordFromLink バリデーションエラー:', ['errors' => $e->errors()]);
             return response()->json([
                 'message' => 'パスワードが8文字以上であることを確認してください。パスワードと確認用パスワードが一致していることを確認してください。',
                 'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
-            Log::error('resetPasswordFromLink エラー:', ['error' => $e->getMessage()]);
             return response()->json([
                 'message' => 'サーバーエラーが発生しました。',
                 'error' => $e->getMessage(),
