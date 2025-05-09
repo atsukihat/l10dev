@@ -2,45 +2,23 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log; // ← ログを追加
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
-    use HasRoles; // 権限の更新に必要
+    use HasRoles;
 
-    // 主キーを 'userId' に設定する例
     protected $primaryKey = 'userId';
+    public $timestamps = false;
 
-    public $timestamps = false; // created_atとupdated_atを無効にする
-
-    // ユーザーの最終ログイン日時を更新するメソッド
-    public function updateLastLogin()
-    {
-        $this->update(['lastLoginAt' => now()]);
-    }
-
-    public function updatecreatedAt()
-    {
-        $this->update(['createdAt' => now()]);
-    }
-
-    public function updateUpdatedAt()
-    {
-        $this->update(['updatedAt' => now()]);
-    }
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'userName',
         'userEmail',
@@ -56,21 +34,11 @@ class User extends Authenticatable
         'lastLoginAt',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
@@ -79,5 +47,60 @@ class User extends Authenticatable
     public function reviews()
     {
         return $this->hasMany(Review::class, 'userId', 'uuid');
+    }
+
+    /**
+     * パスワードリセット用に userEmail を返す
+     */
+    public function getEmailForPasswordReset()
+    {
+        return $this->userEmail;
+    }
+
+    /**
+     * パスワードリセット通知を送信する
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $resetUrl = url('/password/reset/' . $token . '?email=' . urlencode($this->userEmail));
+
+        $body = <<<EOT
+            {$this->userName} 様
+
+            いつも【かえで 授業レビューサイト】のご利用ありがとうございます。
+            パスワードの再設定につきまして、以下のリンクよりお手続きください。
+
+            ▼ パスワード再設定リンク（有効期限：60分）
+            $resetUrl
+
+            ※このメールに心当たりがない場合は、他の方が誤ってメールアドレスを入力した可能性があります。
+            その場合は、このメールを無視してください。
+
+            --
+            このメールはシステムから自動送信されています。
+            ご不明な点がございましたら、サポートまでお問い合わせください。
+            https://hirodai-kaede.com/contact
+            EOT;
+
+        Mail::raw($body, function ($message) {
+            $message->to($this->userEmail)
+                ->subject('【かえで 授業レビューサイト】パスワード再設定のご案内');
+        });
+    }
+
+
+    public function updateLastLogin()
+    {
+        $this->update(['lastLoginAt' => now()]);
+    }
+
+    public function updatecreatedAt()
+    {
+        $this->update(['createdAt' => now()]);
+    }
+
+    public function updateUpdatedAt()
+    {
+        $this->update(['updatedAt' => now()]);
     }
 }

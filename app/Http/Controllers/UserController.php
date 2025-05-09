@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +15,8 @@ use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
 use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserEditRequest;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class UserController extends Controller
 {
@@ -24,30 +27,24 @@ class UserController extends Controller
     public function create(UserCreateRequest $request)
     {
         $user = User::query()->create([
-            'userName'=>$request['userName'],
-            'userEmail'=>$request['userEmail'],
-            'password'=>Hash::make($request['password']),
-            'category'=>$request['category'],
-            'faculty'=>$request['faculty'],
-            'department'=>$request['department'],
-            'admissionYear'=>$request['admissionYear'],
-            'createdAt'=>now(),
-            'updatedAt'=>now(),
+            'userName' => $request['userName'],
+            'userEmail' => $request['userEmail'],
+            'password' => Hash::make($request['password']),
+            'category' => $request['category'],
+            'faculty' => $request['faculty'],
+            'department' => $request['department'],
+            'admissionYear' => $request['admissionYear'],
+            'createdAt' => now(),
+            'updatedAt' => now(),
         ]);
 
         // ユーザーに権限を付与;
         $user->assignRole('user');
         $user->givePermissionTo('user');
 
-        // 役割・権限の取得
-        Log::Debug("ログイン中のユーザー情報:");
-        Log::Debug($user->userId);
-        Log::Debug($user->getRoleNames());
-        Log::Debug($user->getDirectPermissions());
-
         Auth::loginUsingId($user->userId);
 
-        return response()->json(['success' => true,'id' => $user->userId,'role' => $user->getRoleNames()]);
+        return response()->json(['success' => true, 'id' => $user->userId, 'role' => $user->getRoleNames()]);
     }
 
     /**
@@ -74,11 +71,11 @@ class UserController extends Controller
             'lastLoginAt' => $user->lastLoginAt,
         ];
 
-         // Reviewsテーブルのlecture_idを基にレビュー一覧の取得
-         $reviews = Reviews::where('userId', $userId)
-         // ->select('attendance_year', 'attendance_confirm', 'weekly_assignments', 'midterm_assignments', 'final_assignments')
-         ->select('reviewId','attendanceYear', 'attendanceConfirm', 'weeklyAssignments', 'midtermAssignments', 'finalAssignments', 'pastExamPossession', 'grades', 'creditLevel', 'interestLevel', 'skillLevel', 'comments','createdAt')
-         ->get();
+        // Reviewsテーブルのlecture_idを基にレビュー一覧の取得
+        $reviews = Reviews::where('userId', $userId)
+            // ->select('attendance_year', 'attendance_confirm', 'weekly_assignments', 'midterm_assignments', 'final_assignments')
+            ->select('reviewId', 'attendanceYear', 'attendanceConfirm', 'weeklyAssignments', 'midtermAssignments', 'finalAssignments', 'pastExamPossession', 'grades', 'creditLevel', 'interestLevel', 'skillLevel', 'comments', 'createdAt')
+            ->get();
 
         $reviewInfo = $reviews->map(function ($review) {
 
@@ -108,8 +105,8 @@ class UserController extends Controller
         });
 
         $data = [
-            'userData'=>$userData,
-            'reviewInfo'=>$reviewInfo,
+            'userData' => $userData,
+            'reviewInfo' => $reviewInfo,
         ];
 
         // JSON形式でデータを返す
@@ -124,42 +121,30 @@ class UserController extends Controller
 
         $user = User::where('userEmail', $userEmail)->first();
 
-        if (Auth::attempt(['userEmail' => $userEmail, 'password' => $password])){
+        if (Auth::attempt(['userEmail' => $userEmail, 'password' => $password])) {
 
             $user = Auth::user();
             $user->updateLastLogin();
-            Log::debug($user); // ユーザー情報の取得
-            Log::debug(Auth::user()->userId); //ユーザーidの取得
 
-            Log::debug("メアド・パスワードの両方あってます");
-
-            // 役割・権限の取得
-            Log::Debug("ログイン中のユーザー情報:");
-            Log::Debug($user->getRoleNames());
-            Log::Debug($user->getDirectPermissions());
-
-            return response()->json(['success' => true,'id' => $user->userId,'role' => $user->getRoleNames()]);
-
-        }
-        else{
+            return response()->json(['success' => true, 'id' => $user->userId, 'role' => $user->getRoleNames()]);
+        } else {
             return response()->json(['success' => false]);
-            Log::debug("メアド・パスワードのどちらかが間違ってます");
         }
     }
 
     public function logout()
     {
-       Auth::logout();
-       return back();
+        Auth::logout();
+        return back();
 
-    //    return redirect('/');
+        //    return redirect('/');
     }
 
     public function update(UserEditRequest $request)
     {
-          $userId = auth()->id();
-          $user = User::find($userId);
-          $user->update($request->all());
+        $userId = auth()->id();
+        $user = User::find($userId);
+        $user->update($request->all());
     }
 
     public function initialValues()
@@ -183,6 +168,74 @@ class UserController extends Controller
         ];
 
         // JSON形式でデータを返す
-        return response()->json($userData);      
+        return response()->json($userData);
+    }
+
+    public function sendResetLink(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email',
+            ]);
+
+            // userEmail でユーザー取得
+            $user = User::where('userEmail', $request->email)->first();
+            if (!$user) {
+                return response()->json(['message' => 'ユーザーが見つかりません。'], 404);
+            }
+
+            // トークンを作成して通知を送る（自動でメール送信）
+            $token = Password::createToken($user);
+            $user->sendPasswordResetNotification($token);
+
+            return response()->json(['message' => 'パスワード再設定リンクを送信しました。'], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => '入力データが無効です。', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'サーバーエラーが発生しました。', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+
+    public function resetPasswordFromLink(Request $request)
+    {
+        try {
+            $request->validate([
+                'token' => 'required',
+                'email' => 'required|email|exists:users,userEmail',
+                'password' => 'required|string|min:8|confirmed',
+            ]);
+
+            // トークンの照合（注意：トークンはハッシュ保存されている）
+            $record = DB::table('password_reset_tokens')
+                ->where('email', $request->email)
+                ->first();
+
+            if (!$record || !Hash::check($request->token, $record->token)) {
+                return response()->json(['message' => 'トークンが無効です。'], 400);
+            }
+
+            if (Carbon::parse($record->created_at)->addMinutes(60)->isPast()) {
+                return response()->json(['message' => 'トークンの有効期限が切れています。'], 400);
+            }
+
+            $user = User::where('userEmail', $request->email)->first();
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+            return response()->json(['message' => 'パスワードが再設定されました。'], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'パスワードが8文字以上であることを確認してください。パスワードと確認用パスワードが一致していることを確認してください。',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'サーバーエラーが発生しました。',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

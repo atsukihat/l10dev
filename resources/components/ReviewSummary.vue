@@ -3,11 +3,24 @@
   import axios from "axios";
   import { useStore } from "vuex";
 
-  import RadarChart from "./RadarChart.vue";
+  import { Radar } from "vue-chartjs";
+  import {
+    Chart as ChartJS,
+    Title,
+    Tooltip,
+    Legend,
+    RadialLinearScale,
+    PointElement,
+    LineElement,
+    Filler
+  } from "chart.js";
+
   import StarRading from "./StarRating.vue";
   import MenuItem from "./shared/MenuItem.vue";
   import ConfirmDialog from "./shared/ConfirmDialog.vue";
   import { useRouter } from "vue-router";
+
+  ChartJS.register(Title, Tooltip, Legend, RadialLinearScale, PointElement, LineElement, Filler);
 
   const router = useRouter();
   const store = useStore();
@@ -27,9 +40,37 @@
   console.log("reviewUserId === requestUserId:", reviewUserId.value === requestUserId.value);
 
   const radarChartData = {
-    creditLevel: props.reviewData.creditLevel,
-    interestLevel: props.reviewData.interestLevel,
-    skillLevel: props.reviewData.skillLevel
+    labels: ["単位取得のしやすさ", "面白さ", "スキルが身につく"],
+    datasets: [
+      {
+        label: "カテゴリ別5段階評価",
+        data: [props.reviewData.creditLevel, props.reviewData.interestLevel, props.reviewData.skillLevel],
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 2
+      }
+    ]
+  };
+
+  const radarChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      r: {
+        beginAtZero: true,
+        min: 0,
+        max: 5,
+        ticks: {
+          stepSize: 1
+        }
+      }
+    },
+    animations: {
+      radius: {
+        duration: 800,
+        easing: "easeOutQuart"
+      }
+    }
   };
 
   const menuItems = ref([
@@ -56,7 +97,7 @@
   // ダイアログの削除ボタンのクリックイベント
   const deleteReview = async () => {
     try {
-      const response = await axios.delete(`/api/deleteReview/${requestReviewId.value}`);
+      await axios.delete(`/api/deleteReview/${requestReviewId.value}`);
       isDialogVisible.value = false; // ダイアログを閉じる
       router.go(0); // リロードする際には以下のコード
     } catch (error) {
@@ -117,10 +158,10 @@
               ></menu-item>
               <!-- 編集・削除のモーダル -->
               <confirm-dialog
+                message-in-dialog="このレビューを削除してもよろしいですか？"
                 :is-dialog-visible="isDialogVisible"
                 @confirm="deleteReview"
                 @cancel="cancelDelete"
-                message-in-dialog="このレビューを削除してもよろしいですか？"
               ></confirm-dialog>
             </v-col>
           </v-row>
@@ -167,7 +208,9 @@
                     </v-table>
                   </v-col>
                   <v-col cols="12" sm="12" md="12" lg="5">
-                    <RadarChart class="ma-5" :radar-chart-data="radarChartData"></RadarChart>
+                    <div class="radar-chart-in-review">
+                      <Radar class="ma-5" :data="radarChartData" :options="radarChartOptions" />
+                    </div>
                   </v-col>
                 </v-row>
               </details>
@@ -186,5 +229,11 @@
   }
   .review-table {
     background-color: #eceff1;
+  }
+  .radar-chart-in-review {
+    width: 100%;
+    height: 400px;
+    position: relative;
+    right: 20px;
   }
 </style>

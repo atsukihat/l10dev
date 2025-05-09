@@ -1,25 +1,39 @@
-<script setup>
-  import { ref, onMounted } from "vue";
+<script setup lang="ts">
+  import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+  import { Radar } from "vue-chartjs";
+  import Loading from "./Loading.vue";
+  import {
+    Chart as ChartJS,
+    Title,
+    Tooltip,
+    Legend,
+    RadialLinearScale,
+    PointElement,
+    LineElement,
+    Filler,
+    ChartData,
+    ChartOptions
+  } from "chart.js";
 
-  const props = defineProps(["radarChartData"]);
+  // 必要なチャート要素を登録
+  ChartJS.register(Title, Tooltip, Legend, RadialLinearScale, PointElement, LineElement, Filler);
 
-  // Chart.js
-  const loadChartJS = () => {
-    return new Promise((resolve, reject) => {
-      const scriptChartJS = document.createElement("script");
-      scriptChartJS.src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.0.1/chart.umd.js";
-      scriptChartJS.defer = true;
-      document.head.appendChild(scriptChartJS);
+  // Props 型定義
+  interface RadarChartData {
+    creditLevel: number;
+    interestLevel: number;
+    skillLevel: number;
+  }
 
-      scriptChartJS.onload = resolve;
-      scriptChartJS.onerror = reject;
-    });
-  };
+  const props = defineProps<{
+    radarChartData: RadarChartData;
+  }>();
 
-  const radarChart = ref(null);
+  // ラベルとデータ定義
+  const labels = ["単位取得のしやすさ", "面白さ", "スキルが身につく"];
 
-  const chartData = {
-    labels: ["単位取得のしやすさ", "面白さ", "スキルが身につく"],
+  const chartData = computed<ChartData<"radar">>(() => ({
+    labels,
     datasets: [
       {
         label: "カテゴリ別5段階評価",
@@ -29,44 +43,65 @@
         borderWidth: 2
       }
     ]
-  };
+  }));
 
-  onMounted(async () => {
-    await loadChartJS();
-
-    // Wait for the script to be executed
-    await new Promise((resolve) => {
-      const checkExist = setInterval(() => {
-        if (typeof Chart !== "undefined") {
-          clearInterval(checkExist);
-          resolve();
+  const chartOptions = computed<ChartOptions<"radar">>(() => ({
+    responsive: false,
+    maintainAspectRatio: false,
+    scales: {
+      r: {
+        beginAtZero: true,
+        min: 0,
+        max: 5,
+        ticks: {
+          stepSize: 1
         }
-      }, 100);
-    });
-
-    // Create Radar Chart
-    const context = radarChart.value.getContext("2d");
-    new Chart(context, {
-      type: "radar",
-      data: chartData,
-      options: {
-        scales: {
-          r: {
-            beginAtZero: true,
-            min: 0,
-            max: 5, // Adjust the max value as needed
-            stepSize: 1 // Adjust the step size as needed
-          }
-        },
-        maintainAspectRatio: false,
-        responsive: true
       }
-    });
+    },
+    animations: {
+      radius: {
+        duration: 800,
+        easing: "easeOutQuart"
+      }
+    }
+  }));
+
+  // ウィンドウ幅に応じたサイズ
+  const windowWidth = ref(window.innerWidth);
+  const updateWidth = () => {
+    windowWidth.value = window.innerWidth;
+  };
+  onMounted(() => window.addEventListener("resize", updateWidth));
+  onUnmounted(() => window.removeEventListener("resize", updateWidth));
+
+  const chartWidth = computed(() => {
+    const w = windowWidth.value;
+    if (w < 600) return 300;
+    if (w < 960) return 400;
+    if (w < 1264) return 600;
+    if (w < 1904) return 700;
+    return 800;
+  });
+  const chartHeight = computed(() => (chartWidth.value * 2) / 3);
+
+  const isChartReady = ref(false);
+  onMounted(async () => {
+    await nextTick();
+    isChartReady.value = true;
+    setTimeout(() => window.dispatchEvent(new Event("resize")), 100);
   });
 </script>
 
 <template>
-  <div>
-    <canvas ref="radarChart" width="600" height="350"></canvas>
+  <div :style="{ width: chartWidth + 'px', height: chartHeight + 'px' }">
+    <Loading v-if="!isChartReady" />
+    <Radar
+      v-else
+      :key="chartWidth"
+      :data="chartData"
+      :options="chartOptions"
+      :width="chartWidth"
+      :height="chartHeight"
+    />
   </div>
 </template>
