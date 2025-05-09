@@ -121,6 +121,19 @@
                     <RouterLink to="/register"> アカウントの新規作成 </RouterLink>
                   </v-col>
                 </v-row>
+                <v-row justify="start">
+                  <v-col
+                    cols="12"
+                    sm="12"
+                    md=""
+                    lg=""
+                    xl=""
+                    justify="center"
+                    class="text-center text-base text-primary"
+                  >
+                    <RouterLink :to="{ name: 'password-reset-request' }"> パスワードを忘れた方はこちら </RouterLink>
+                  </v-col>
+                </v-row>
               </v-form>
             </v-card-text>
           </v-col>

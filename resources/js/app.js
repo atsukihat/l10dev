@@ -4,11 +4,12 @@ import LoginView from "../views/LoginView.vue";
 import WelcomeView from "../views/WelcomeView.vue";
 import ProfileView from "../views/ProfileView.vue";
 import RegisterView from "../views/RegisterView.vue";
-import RessetPasswordView from "../views/RessetPasswordView.vue";
 import ClassListView from "../views/ClassListView.vue";
 import ProfileEditView from "../views/ProfileEditView.vue";
 import ClassDetailView from "../views/ClassDetailView.vue";
 import ClassPostView from "../views/ClassPostView.vue";
+import PasswordResetRequestView from "../views/PasswordResetRequestView.vue";
+import PasswordResetView from "../views/PasswordResetView.vue";
 import PrivacyPolicyView from "../views/PrivacyPolicyView.vue";
 import TermsView from "../views/TermsView.vue";
 import ContactView from "../views/ContactView.vue";
@@ -28,7 +29,6 @@ const router = createRouter({
     { path: "/", name: "welcome", component: WelcomeView },
     { path: "/register", name: "register", component: RegisterView },
     { path: "/login", name: "login", component: LoginView },
-    { path: "/reset-password", name: "reset-password", component: RessetPasswordView, meta: { requiresAuth: true } },
     // 後々/profileにmeta: { requiresAuth: true },を追加する(ログインしていないと見れない)
     { path: "/profile", name: "profile", component: ProfileView, meta: { requiresAuth: true } },
     { path: "/profile/edit", name: "profile/edit", component: ProfileEditView, meta: { requiresAuth: true } },
@@ -37,9 +37,11 @@ const router = createRouter({
       path: "/class/:lectureId/detail",
       name: "class-detail",
       component: ClassDetailView,
-      props: true,
+      props: true
     },
     { path: "/class/post", name: "class/post", component: ClassPostView, meta: { requiresAuth: true } },
+    { path: "/password/reset-request", name: "password-reset-request", component: PasswordResetRequestView },
+    { path: "/password/reset/:token", name: "password-reset", component: PasswordResetView },
     { path: "/privacy-policy", name: "privacy-policy", component: PrivacyPolicyView },
     { path: "/terms", name: "terms", component: TermsView },
     { path: "/contact", name: "contact", component: ContactView },
@@ -60,6 +62,9 @@ router.beforeEach((to, from, next) => {
       // User is not logged in, redirect to the login page
       next("/login");
     }
+  } else if (to.name === "login" && store.getters.isLoggedIn){
+    // ログイン済みのユーザーはホーム画面にリダイレクト
+    next("/");
   } else {
     // Route does not require authentication, proceed
     next();
