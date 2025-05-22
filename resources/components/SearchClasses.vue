@@ -403,6 +403,38 @@
     // candidateTeacherNameList.value = [];
     filterCandidateConditions();
   };
+
+  // 検索条件をクリアする関数
+  const clearAllConditions = () => {
+    // すべての条件をnullに設定
+    detailedCondition.value = {
+      lectureName: null,
+      teacherName: null,
+      location: null,
+      faculty: null,
+      category: null,
+      term: null,
+      dayOfWeek: null,
+      timePeriod: null,
+      grade: null,
+      totalEvaluation: {
+        min: null,
+        max: null
+      },
+      creditLevel: {
+        min: null,
+        max: null
+      },
+      interestLevel: {
+        min: null,
+        max: null
+      },
+      skillLevel: {
+        min: null,
+        max: null
+      }
+    };
+  };
 </script>
 
 <template>
@@ -743,6 +775,10 @@
                 </v-expansion-panels>
                 <v-row justify="center" align="center">
                   <v-col class="d-flex justify-center">
+                    <v-btn color="error" class="mr-4" @click="clearAllConditions">
+                      <v-icon start icon="mdi-delete" color="white"></v-icon>
+                      <p class="text-white">条件をクリア</p>
+                    </v-btn>
                     <v-btn color="primary" @click="sendQueryToClassListView">
                       <v-icon start icon="mdi-magnify" color="white"></v-icon>
                       <p class="text-white">検索</p>
