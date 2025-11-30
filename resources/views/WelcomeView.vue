@@ -3,7 +3,7 @@
   import Welcome from "../components/Welcome.vue";
   import SearchClasses from "../components/SearchClasses.vue";
   import FontChangeTitle from "../components/shared/FontChangeTitle.vue";
-  import Admax from "../components/Admax.vue";
+  import Advertisement from "../components/Advertisement.vue";
 </script>
 
 <template>
@@ -12,8 +12,7 @@
   </v-container>
   <SearchClasses></SearchClasses>
 
-  <Admax></Admax>
-
+  <Advertisement></Advertisement>
 
   <Welcome></Welcome>
 </template>

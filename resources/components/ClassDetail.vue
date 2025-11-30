@@ -5,7 +5,7 @@
   import ClassInformationTable from "./ClassInformationTable.vue";
   import RadarChart from "./RadarChart.vue";
   import BarGraph from "./BarGraph.vue";
-  import Admax from "../components/Admax.vue";
+  import Advertisement from "../components/Advertisement.vue";
 
   const { classDetailData } = defineProps(["classDetailData"]);
   const router = useRouter();
@@ -136,7 +136,7 @@
           <p>データを取得できませんでした．</p>
         </v-col>
       </v-row>
-      <Admax></Admax>
+      <Advertisement></Advertisement>
       <ReviewListVue :review-data-list="classDetailData?.reviewDataList"></ReviewListVue>
     </v-col>
   </v-row>

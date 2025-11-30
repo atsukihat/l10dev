@@ -6,7 +6,7 @@
   import FontChangeTitle from "../components/shared/FontChangeTitle.vue";
   import ClassList from "../components/ClassList.vue";
   import SearchClasses from "../components/SearchClasses.vue";
-  import Admax from "../components/Admax.vue";
+  import Advertisement from "../components/Advertisement.vue";
 
   // searchClasses.vueで「検索」ボタンを押すととquery付きのpathでこのファイルのViewがrouter.pushで読み込まれる
   // path内のそのqueryをpathから取得し，格納する．
@@ -98,7 +98,7 @@
   <SearchClasses></SearchClasses>
 
   <!-- 広告 -->
-  <Admax></Admax>
+  <Advertisement></Advertisement>
 
   <!-- ここから検索で出てきた授業のリスト -->
   <ClassList :classDataList="classDataList"></ClassList>
