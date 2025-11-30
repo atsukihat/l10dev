@@ -1,11 +1,23 @@
 <template>
   <div class="advertisement">
-    <img :src="ad" alt="hirodaiken advertisement" class="ad-image" />
+    <a :href="props.href" target="_blank" rel="noopener noreferrer">
+      <img :src="ad" :alt="props.alt" class="ad-image" />
+    </a>
   </div>
 </template>
 
 <script setup>
   import ad from "../assets/img/hirodaiken_ad.png";
+  const props = defineProps({
+    alt: {
+      type: String,
+      default: "広大研"
+    },
+    href: {
+      type: String,
+      default: "https://hirodaiken.jp/"
+    }
+  });
 </script>
 
 <style scoped>
