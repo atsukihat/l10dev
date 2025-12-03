@@ -27,7 +27,7 @@
     } else if (sm.value) {
       fontSize.value = "1.2rem";
     } else if (xs.value) {
-      fontSize.value = "1rem";
+      fontSize.value = "1.2rem";
     } else {
       fontSize.value = "0.8rem";
     }

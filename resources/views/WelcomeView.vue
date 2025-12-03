@@ -3,16 +3,18 @@
   import Welcome from "../components/Welcome.vue";
   import SearchClasses from "../components/SearchClasses.vue";
   import FontChangeTitle from "../components/shared/FontChangeTitle.vue";
-  import Advertisement from "../components/Advertisement.vue";
+  import AdvertisementTitle from "../components/AdvertisementTitle.vue";
+  import AdvertisementContent from "../components/AdvertisementContent.vue";
 </script>
 
 <template>
-  <v-container class="pb-8 bg-primary" fluid>
+  <v-container class="bg-primary" fluid>
     <FontChangeTitle> 大学生による授業評価を、オープンに。 </FontChangeTitle>
+    <AdvertisementTitle></AdvertisementTitle>
   </v-container>
   <SearchClasses></SearchClasses>
 
-  <Advertisement></Advertisement>
+  <AdvertisementContent></AdvertisementContent>
 
   <Welcome></Welcome>
 </template>

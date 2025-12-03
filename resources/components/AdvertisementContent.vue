@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-  import ad from "../assets/img/hirodaiken_ad.png";
+  import ad from "../assets/img/hirodaiken_content.png";
   const props = defineProps({
     alt: {
       type: String,
@@ -28,7 +28,7 @@
     padding: 8px 0;
   }
   .ad-image {
-    max-width: 400px;
+    max-width: 290px;
     height: auto;
     display: block;
     border-radius: 6px;
