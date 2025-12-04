@@ -1,5 +1,4 @@
 <script setup>
-  import { onMounted } from "vue";
   import Welcome from "../components/Welcome.vue";
   import SearchClasses from "../components/SearchClasses.vue";
   import FontChangeTitle from "../components/shared/FontChangeTitle.vue";
@@ -8,7 +7,7 @@
 </script>
 
 <template>
-  <v-container class="bg-primary" fluid>
+  <v-container class="bg-primary pb-0" fluid>
     <FontChangeTitle> 大学生による授業評価を、オープンに。 </FontChangeTitle>
     <AdvertisementTitle></AdvertisementTitle>
   </v-container>
