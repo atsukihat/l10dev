@@ -40,7 +40,7 @@
           // console.log(data['role'])
           console.log(data);
           store.dispatch("login", data);
-          router.push({ name: 'profile' });
+          router.push({ name: "profile" });
         } else {
           //ログインに失敗したときのエラーメッセージ
           errorMessage.value = "メールアドレスまたはパスワードを確認してください。";
